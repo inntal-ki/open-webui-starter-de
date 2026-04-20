@@ -1,0 +1,22 @@
+# Overlay fuer LiteLLM-Proxy.
+# Erlaubt zusaetzlich zu Ollama externe APIs (OpenAI, Azure, Mistral, DeepSeek, ...)
+# einheitlich ueber eine OpenAI-kompatible Schnittstelle anzusprechen.
+#
+# Nutzung:
+#   1. config/litellm.yaml anlegen (siehe config/litellm.example.yaml)
+#   2. docker compose -f docker-compose.yml -f docker-compose.litellm.yml up -d
+#   3. In Open-WebUI als zusaetzlichen OpenAI-kompatiblen Endpunkt hinterlegen:
+#      http://litellm:4000
+
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    container_name: litellm
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4000:4000"
+    environment:
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+    volumes:
+      - ./config/litellm.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml", "--port", "4000"]

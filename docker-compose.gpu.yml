@@ -1,0 +1,15 @@
+# Overlay fuer NVIDIA-GPU-Betrieb.
+# Voraussetzung: NVIDIA Container Toolkit installiert.
+#
+# Nutzung:
+#   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+
+services:
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
