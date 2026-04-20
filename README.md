@@ -54,6 +54,11 @@ Empfohlene Modelle für den Anfang (alle deutsch-fähig):
 | `mistral-nemo:12b` | 7 GB | ~14 GB | Gut für strukturierte Ausgaben |
 | `nomic-embed-text` | 274 MB | wenig | Embeddings für RAG-Funktion |
 
+> **Hinweis zu Modell-Lizenzen:** Nicht alle Modelle sind kommerziell
+> uneingeschränkt nutzbar. Llama hat eine eigene Community-Lizenz,
+> Gemma eigene Terms of Use. Qwen, Mistral und Phi sind Apache 2.0 / MIT.
+> Siehe [NOTICE.md](NOTICE.md) für Details.
+
 ## Prompt-Bibliothek
 
 Im Ordner [`prompts/`](prompts/) finden Sie vorgefertigte Prompts für:
