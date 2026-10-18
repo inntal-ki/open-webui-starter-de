@@ -29,6 +29,7 @@ Versionen und Lizenzen geprüft am 18.10.2026.
 - SECURITY.md: Hinweis auf 2FA entfernt (Open WebUI bringt keine eigene mit),
   Update-Weg für gepinnte Versionen, Kontakt auf inntal-ki.eu.
 - Abschnitt „Brauchen Sie Hilfe bei der Einführung?“ entfernt.
+- Prompts: echte Umlaute statt Ersatzschreibung („für“ statt „fuer“).
 
 ### Neu
 - GitHub Action: `docker compose config` für alle Kombinationen, Prüfung auf

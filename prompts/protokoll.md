@@ -15,6 +15,6 @@ Struktur:
 - To-dos mit Verantwortlichem und Frist
 - Offene Punkte
 
-Keine Erfindungen. Wenn etwas unklar ist, schreibe "[unklar — bitte pruefen]".
-Keine vollstaendigen Saetze wo Stichpunkte reichen.
+Keine Erfindungen. Wenn etwas unklar ist, schreibe "[unklar — bitte prüfen]".
+Keine vollständigen Sätze wo Stichpunkte reichen.
 ```
