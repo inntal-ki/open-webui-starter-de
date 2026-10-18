@@ -1,22 +1,37 @@
-# Overlay fuer LiteLLM-Proxy.
-# Erlaubt zusaetzlich zu Ollama externe APIs (OpenAI, Azure, Mistral, DeepSeek, ...)
-# einheitlich ueber eine OpenAI-kompatible Schnittstelle anzusprechen.
+# Overlay für den LiteLLM-Proxy.
+# Bindet zusätzlich zu Ollama weitere Modelle über eine einheitliche,
+# OpenAI-kompatible Schnittstelle an – lokal (z. B. vLLM) oder bewusst
+# gewählte Cloud-Modelle.
+#
+# ⚠️ Sobald hier ein Cloud-Modell eingetragen ist, verlassen Anfragen an dieses
+# Modell das Haus. Siehe dsgvo-ki-checkliste, Abschnitt 7.
 #
 # Nutzung:
-#   1. config/litellm.yaml anlegen (siehe config/litellm.example.yaml)
-#   2. docker compose -f docker-compose.yml -f docker-compose.litellm.yml up -d
-#   3. In Open-WebUI als zusaetzlichen OpenAI-kompatiblen Endpunkt hinterlegen:
-#      http://litellm:4000
+#   1. config/litellm.yaml anlegen (Vorlage: config/litellm.example.yaml)
+#   2. LITELLM_MASTER_KEY in .env setzen
+#   3. docker compose -f docker-compose.yml -f docker-compose.litellm.yml up -d
+#
+# Open WebUI übernimmt die Verbindung beim ersten Start. Wurde Open WebUI
+# schon vorher gestartet, die Verbindung unter Admin → Einstellungen →
+# Verbindungen eintragen: http://litellm:4000/v1
 
 services:
   litellm:
-    image: ghcr.io/berriai/litellm:main-stable
+    image: ghcr.io/berriai/litellm:v1.105.1
     container_name: litellm
     restart: unless-stopped
     ports:
       - "127.0.0.1:4000:4000"
     environment:
-      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:?LITELLM_MASTER_KEY in .env setzen}
     volumes:
       - ./config/litellm.yaml:/app/config.yaml:ro
     command: ["--config", "/app/config.yaml", "--port", "4000"]
+
+  open-webui:
+    depends_on:
+      - litellm
+    environment:
+      - ENABLE_OPENAI_API=true
+      - OPENAI_API_BASE_URL=http://litellm:4000/v1
+      - OPENAI_API_KEY=${LITELLM_MASTER_KEY}

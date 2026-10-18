@@ -7,9 +7,12 @@ model_list:
   # Lokal via Ollama (in diesem Compose-Netzwerk)
   - model_name: local-qwen
     litellm_params:
-      model: ollama/qwen2.5:7b
+      model: ollama/qwen3.5:9b
       api_base: http://ollama:11434
 
+  # ⚠️ Cloud-Modelle: Anfragen an diese Einträge verlassen das Haus.
+  # Nur bewusst und klar benannt eintragen (dsgvo-ki-checkliste, Abschnitt 7).
+  #
   # Beispiel: OpenAI (API-Key via Umgebungsvariable)
   # - model_name: gpt-4o
   #   litellm_params:
@@ -29,6 +32,6 @@ general_settings:
 
 litellm_settings:
   drop_params: true
-  # Budget-Limit pro Tag ueber alle Modelle hinweg (Euro-Aequivalent in USD)
+  # Budget-Limit pro Tag über alle Modelle hinweg (Betrag in USD)
   # max_budget: 5.0
   # budget_duration: 1d

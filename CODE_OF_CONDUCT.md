@@ -23,7 +23,7 @@ Erscheinung, Religion oder sexueller Identität.
 
 ## Durchsetzung
 
-Verstöße können an **kontakt@inntal-ki.com** gemeldet werden. Alle Beschwerden
+Verstöße können an **kontakt@inntal-ki.eu** gemeldet werden. Alle Beschwerden
 werden vertraulich geprüft. Maintainer behalten sich das Recht vor, Beiträge
 zu entfernen oder Mitwirkende temporär oder dauerhaft auszuschließen.
 

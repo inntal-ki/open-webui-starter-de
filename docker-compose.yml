@@ -1,16 +1,20 @@
-# Open-WebUI + Ollama - lokale KI-Plattform
+# Open WebUI + Ollama – lokale KI-Plattform
 #
-# Standardkonfiguration fuer CPU-Betrieb. Fuer GPU zusaetzlich:
+# Standardkonfiguration für CPU-Betrieb. Für GPU zusätzlich:
 #   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+#
+# Versionen sind bewusst fest gepinnt (geprüft am 18.10.2026), nie :latest
+# oder :main – ein Update ist eine bewusste Änderung dieser Zeilen.
 
 services:
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.40.6
     container_name: ollama
     restart: unless-stopped
     volumes:
       - ollama:/root/.ollama
     ports:
+      # Nur vom Host selbst erreichbar; Open WebUI spricht Ollama intern an.
       - "127.0.0.1:11434:11434"
     environment:
       - OLLAMA_HOST=0.0.0.0
@@ -23,20 +27,30 @@ services:
       retries: 3
 
   open-webui:
-    image: ghcr.io/open-webui/open-webui:main
+    image: ghcr.io/open-webui/open-webui:v0.12.3
     container_name: open-webui
     restart: unless-stopped
     depends_on:
       - ollama
     ports:
-      - "${WEBUI_PORT:-3000}:8080"
+      # Vorgabe: nur lokal (127.0.0.1). Für den Zugriff aus dem LAN
+      # WEBUI_BIND=0.0.0.0 setzen – besser: Reverse Proxy mit HTTPS davor.
+      - "${WEBUI_BIND:-127.0.0.1}:${WEBUI_PORT:-3000}:8080"
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
-      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:?WEBUI_SECRET_KEY in .env setzen}
       - DEFAULT_LOCALE=${DEFAULT_LOCALE:-de-DE}
       - WEBUI_NAME=${WEBUI_NAME:-KI-Assistent}
       - ENABLE_SIGNUP=${ENABLE_SIGNUP:-false}
       - DEFAULT_USER_ROLE=${DEFAULT_USER_ROLE:-pending}
+      # Ohne diese Zeile trägt Open WebUI eine Verbindung zu api.openai.com ein
+      # (ohne Schlüssel). Hier: keine voreingestellte Cloud-Verbindung.
+      - ENABLE_OPENAI_API=${ENABLE_OPENAI_API:-false}
+      # Keine Nutzungsstatistik an Dritte – im Image bereits so voreingestellt,
+      # hier ausdrücklich, damit es sichtbar bleibt.
+      - ANONYMIZED_TELEMETRY=false
+      - DO_NOT_TRACK=true
+      - SCARF_NO_ANALYTICS=true
     volumes:
       - open-webui:/app/backend/data
 

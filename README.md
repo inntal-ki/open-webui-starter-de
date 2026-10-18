@@ -1,25 +1,31 @@
-# Open-WebUI Starter DE
+# Open WebUI Starter DE
 
-**Ein fertiges Docker-Compose-Setup für Open-WebUI + Ollama mit deutschen Defaults.**
+**Ein fertiges Docker-Compose-Setup für Open WebUI + Ollama mit deutschen Vorgaben.**
 
-In 15 Minuten eine lokale ChatGPT-Alternative auf Ihrer Hardware — ohne Cloud,
-ohne US-Anbieter, mit sinnvollen Standard-Prompts für deutsche KMU.
+[![Compose](https://github.com/inntal-ki/open-webui-starter-de/actions/workflows/compose.yml/badge.svg)](https://github.com/inntal-ki/open-webui-starter-de/actions/workflows/compose.yml)
+
+**Stand:** Oktober 2026 · Version 1.1.0 · Open WebUI v0.12.3, Ollama 0.40.6 (geprüft am 18.10.2026)
+
+Eine lokale Chat-Oberfläche auf Ihrer eigenen Hardware: Das Modell rechnet bei
+Ihnen, **keine Eingabe geht an einen Cloud-Anbieter** — dazu Standard-Prompts
+für typische Aufgaben in deutschsprachigen KMU.
 
 ## Was Sie bekommen
 
-- **Open-WebUI** — moderne Chat-Oberfläche (vergleichbar ChatGPT)
-- **Ollama** — Modell-Runtime für lokale LLMs
-- **Optional LiteLLM-Proxy** — um zusätzlich externe APIs (z.B. Azure, Mistral) einzubinden
+- **Open WebUI** — Chat-Oberfläche im Browser
+- **Ollama** — Laufzeitumgebung für lokale Sprachmodelle
+- **Optional LiteLLM-Proxy** — um weitere Modelle über eine OpenAI-kompatible Schnittstelle einzubinden
 - **Prompt-Bibliothek** — 10 vorgefertigte Prompts für typische KMU-Aufgaben
-- **Deutsche UI-Defaults** — Sprache, Datumsformat, Tonalität
+- **Deutsche Vorgaben** — Oberfläche auf Deutsch, Registrierung nur durch den Admin, neue Nutzer müssen freigeschaltet werden
+- **Feste Versionen** — alle Images gepinnt, keine beweglichen Tags wie `:latest`
 
 ## Voraussetzungen
 
 - Linux-Server oder Workstation (Ubuntu 22.04+ empfohlen)
 - Docker + Docker Compose v2
-- **Für CPU-Betrieb:** 16 GB RAM (nutzbar für Modelle bis ~7B Parameter)
-- **Für GPU-Betrieb:** NVIDIA-Karte ab 12 GB VRAM (RTX 3060 aufwärts) mit NVIDIA Container Toolkit
-- Port 3000 (Open-WebUI) und 11434 (Ollama) frei
+- **CPU-Betrieb:** 16 GB RAM für Modelle bis etwa 9B Parameter (langsam, aber brauchbar zum Ausprobieren)
+- **GPU-Betrieb:** NVIDIA-Karte ab 12 GB VRAM mit NVIDIA Container Toolkit
+- Ports 3000 (Open WebUI) und 11434 (Ollama) auf dem Host frei
 
 ## Schnellstart
 
@@ -27,37 +33,54 @@ ohne US-Anbieter, mit sinnvollen Standard-Prompts für deutsche KMU.
 git clone https://github.com/inntal-ki/open-webui-starter-de.git
 cd open-webui-starter-de
 cp .env.example .env
-# .env nach Bedarf anpassen (Hostname, Ports, Secret)
+# In .env mindestens WEBUI_SECRET_KEY setzen: openssl rand -hex 32
 docker compose up -d
 ```
 
 Browser öffnen: `http://localhost:3000`
 
-Beim ersten Start legt Open-WebUI automatisch einen Admin-Account an — der
-erste registrierte Nutzer wird Admin.
+Beim ersten Aufruf legen Sie das Admin-Konto an — das erste Konto wird Admin.
+Danach ist die Selbstregistrierung abgeschaltet (`ENABLE_SIGNUP=false`); weitere
+Nutzer legt der Admin an.
+
+Open WebUI ist in der Vorgabe nur auf diesem Rechner erreichbar (`127.0.0.1`).
+Für den Zugriff aus dem Firmennetz `WEBUI_BIND=0.0.0.0` in `.env` setzen —
+für den Dauerbetrieb besser einen Reverse Proxy mit HTTPS davorstellen
+(siehe [`SECURITY.md`](SECURITY.md)).
 
 ## Erstes Modell laden
 
-Nach dem Start einmal ausführen:
-
 ```bash
-docker compose exec ollama ollama pull qwen2.5:7b
+docker compose exec ollama ollama pull qwen3.5:9b
 ```
 
-Empfohlene Modelle für den Anfang (alle deutsch-fähig):
+Eine Auswahl aus der Ollama-Bibliothek (Stand 18.10.2026; Lizenz laut
+Modellkarte des Herstellers):
 
-| Modell | Größe | VRAM/RAM | Eignung |
-|--------|-------|----------|---------|
-| `qwen2.5:7b` | 4.4 GB | ~8 GB | Allgemeine Aufgaben, guter Kompromiss |
-| `qwen2.5:14b` | 9 GB | ~16 GB | Anspruchsvollere Texte |
-| `llama3.3:70b` | 43 GB | 48 GB+ | Top-Qualität, nur mit großer GPU |
-| `mistral-nemo:12b` | 7 GB | ~14 GB | Gut für strukturierte Ausgaben |
-| `nomic-embed-text` | 274 MB | wenig | Embeddings für RAG-Funktion |
+| Modell | Download | Speicher (Richtwert) | Lizenz | Eignung |
+|--------|----------|----------------------|--------|---------|
+| `qwen3.5:9b` | 6,6–7,6 GB | 12 GB VRAM / 16 GB RAM | Apache 2.0 | Einstieg, allgemeine Aufgaben |
+| `gemma4:e4b` | 6,6–9,5 GB | 12 GB VRAM / 16 GB RAM | Apache 2.0 | Einstieg, Bilder als Eingabe |
+| `gemma4:12b` | 7,7–8,0 GB | 12–16 GB VRAM | Apache 2.0 | Anspruchsvollere Texte |
+| `gpt-oss:20b` | 14 GB | 16 GB VRAM | Apache 2.0 | Schrittweises Begründen |
+| `mistral-small3.2:24b` | 15 GB | 24 GB VRAM | Apache 2.0 | Deutsch laut Modellkarte unterstützt, Bilder als Eingabe |
+| `qwen3.6:35b` | 23–24 GB | 32 GB VRAM | Apache 2.0 | Größtes Modell der Auswahl, Mixture-of-Experts (3B aktiv) |
+| `bge-m3` | 1,2 GB | wenig | MIT | Embeddings für Dokumente (RAG), mehrsprachig |
 
-> **Hinweis zu Modell-Lizenzen:** Nicht alle Modelle sind kommerziell
-> uneingeschränkt nutzbar. Llama hat eine eigene Community-Lizenz,
-> Gemma eigene Terms of Use. Qwen, Mistral und Phi sind Apache 2.0 / MIT.
-> Siehe [NOTICE.md](NOTICE.md) für Details.
+Der Richtwert ist die Dateigröße plus Reserve für den Gesprächskontext — bei
+langen Dokumenten mehr. Wie gut ein Modell **Deutsch** schreibt, testen Sie am
+besten mit eigenen Texten, bevor Sie sich festlegen.
+
+> **Lizenzen:** Die Modelle oben stehen laut ihrer Modellkarte unter Apache 2.0
+> bzw. MIT. Das gilt nicht für jede Familie: Llama hat eine eigene
+> Community-Lizenz, ältere Gemma-Versionen (bis Gemma 3) eigene Nutzungsbedingungen.
+> Prüfen Sie vor dem produktiven Einsatz die Lizenz des konkreten Modells —
+> Ollama prüft das nicht. Siehe [NOTICE.md](NOTICE.md).
+
+> **Achtung, Cloud-Modelle:** Die Ollama-Bibliothek enthält inzwischen auch
+> Varianten mit `cloud` im Namen (z. B. `gpt-oss:20b-cloud`). Diese rechnen
+> **nicht lokal**, sondern bei Ollama. Wer keine Daten aus dem Haus geben
+> will, nutzt sie nicht.
 
 ## Prompt-Bibliothek
 
@@ -72,16 +95,17 @@ Im Ordner [`prompts/`](prompts/) finden Sie vorgefertigte Prompts für:
 - Meetings zusammenfassen (mit vorab transkribiertem Text)
 - Rechtliche Texte in Alltagssprache übersetzen
 - Interne Dokumentation aus Code-Kommentaren
-- Rechnungs-Reminder in angemessenem Ton
+- Zahlungserinnerungen in angemessenem Ton
 
-Diese können Sie in Open-WebUI als "Custom Prompts" oder "Models" hinterlegen.
+Diese können Sie in Open WebUI als „Prompts“ oder als eigene „Modelle“ mit
+Systemprompt hinterlegen.
 
 ## Konfigurationsdateien
 
 - [`docker-compose.yml`](docker-compose.yml) — Haupt-Compose
-- [`docker-compose.gpu.yml`](docker-compose.gpu.yml) — Overlay für GPU-Support
-- [`docker-compose.litellm.yml`](docker-compose.litellm.yml) — Overlay für LiteLLM-Proxy
-- [`.env.example`](.env.example) — Alle Einstellungen mit Kommentaren
+- [`docker-compose.gpu.yml`](docker-compose.gpu.yml) — Overlay für GPU-Betrieb
+- [`docker-compose.litellm.yml`](docker-compose.litellm.yml) — Overlay für den LiteLLM-Proxy
+- [`.env.example`](.env.example) — alle Einstellungen mit Kommentaren
 - [`prompts/`](prompts/) — Markdown-Dateien mit Prompt-Vorlagen
 
 ### Mit GPU starten
@@ -91,16 +115,26 @@ docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
 
 ### Mit LiteLLM starten
 ```bash
+cp config/litellm.example.yaml config/litellm.yaml
+# LITELLM_MASTER_KEY in .env setzen
 docker compose -f docker-compose.yml -f docker-compose.litellm.yml up -d
 ```
 
+Sobald Sie in `config/litellm.yaml` ein Cloud-Modell eintragen, verlassen
+Anfragen an dieses Modell das Haus. Das kann eine bewusste Wahl sein — dann
+aber als eigener, klar benannter Eintrag, nicht als stiller Ersatz für das
+lokale Modell (siehe [dsgvo-ki-checkliste](https://github.com/inntal-ki/dsgvo-ki-checkliste),
+Abschnitt 7).
+
 ## Sicherheit und Betrieb
 
-- **Reverse Proxy:** Für Produktivbetrieb Open-WebUI hinter nginx/Caddy mit
-  HTTPS betreiben. Nicht direkt Port 3000 freigeben.
-- **Backup:** Volume `open-webui` enthält Benutzer, Chats, Einstellungen.
+- **Erreichbarkeit:** Vorgabe ist `127.0.0.1`. Für Produktivbetrieb Open WebUI
+  hinter nginx/Caddy mit HTTPS betreiben, Port 3000 nicht direkt freigeben.
+- **Backup:** Das Volume `open-webui` enthält Benutzer, Chats und Einstellungen.
   Regelmäßig sichern.
-- **Updates:** `docker compose pull && docker compose up -d` aktualisiert Images.
+- **Updates:** Die Versionen stehen fest in den Compose-Dateien. Für ein Update
+  die Image-Zeile ändern (Release Notes lesen), dann `docker compose pull` und
+  `docker compose up -d`.
 
 Siehe [`SECURITY.md`](SECURITY.md) für eine Hardening-Checkliste.
 
@@ -109,22 +143,19 @@ Siehe [`SECURITY.md`](SECURITY.md) für eine Hardening-Checkliste.
 - Kein fertiges Enterprise-Produkt — es ist ein Starter.
 - Kein Ersatz für Anwaltskonsultation bei DSGVO-Fragen (siehe
   [dsgvo-ki-checkliste](https://github.com/inntal-ki/dsgvo-ki-checkliste)).
-- Keine Produktions-Konfiguration für hohe Last — für >10 parallele Nutzer
-  ist eine dedizierte Architektur nötig.
-
-## Brauchen Sie Hilfe bei der Einführung?
-
-Die Software ist kostenlos. Die Einführung in Ihrem Betrieb
-(Hardware-Auswahl, Integration in bestehende Systeme, Schulung, laufender Support)
-ist eine Dienstleistung von [Inntal-KI](https://inntal-ki.com).
+- Keine Konfiguration für hohe Last — für viele parallele Nutzer braucht es
+  eine eigene Architektur.
 
 ## Lizenz
 
 [MIT](LICENSE) — freie Nutzung auch kommerziell, keine Gewähr.
 
-Open-WebUI und Ollama haben eigene Lizenzen (Apache 2.0 / MIT), die für
-dieses Setup eingehalten werden.
+Open WebUI, Ollama und LiteLLM haben eigene Lizenzen — siehe [NOTICE.md](NOTICE.md).
+Wichtig bei Open WebUI: Ab mehr als 50 Nutzern in 30 Tagen darf das
+„Open WebUI“-Branding nicht entfernt oder ersetzt werden. Ein eigener
+`WEBUI_NAME` wird deshalb als „KI-Assistent (Open WebUI)“ angezeigt.
 
 ---
 
-Teil der [inntal-ki](https://github.com/inntal-ki) Open-Source-Familie.
+Teil der [inntal-ki](https://github.com/inntal-ki) Open-Source-Familie — ein
+persönliches, nicht kommerzielles Projekt · [inntal-ki.eu](https://inntal-ki.eu)

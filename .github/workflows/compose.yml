@@ -1,0 +1,30 @@
+name: Compose
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Vorlagen als Konfiguration verwenden
+        run: |
+          cp .env.example .env
+          cp config/litellm.example.yaml config/litellm.yaml
+      - name: docker compose config (alle Kombinationen)
+        run: |
+          docker compose -f docker-compose.yml config -q
+          docker compose -f docker-compose.yml -f docker-compose.gpu.yml config -q
+          docker compose -f docker-compose.yml -f docker-compose.litellm.yml config -q
+      - name: Keine beweglichen Image-Tags
+        run: |
+          if grep -nE 'image: .*:(latest|main|main-stable|stable|dev)\s*$' docker-compose*.yml; then
+            echo "Bewegliche Image-Tags gefunden – bitte auf eine feste Version pinnen."; exit 1
+          fi
+      - name: Open WebUI standardmäßig nur lokal gebunden
+        run: |
+          docker compose -f docker-compose.yml config --format json \
+            | python3 -c "import json,sys; p=json.load(sys.stdin)['services']['open-webui']['ports'][0]; assert p.get('host_ip')=='127.0.0.1', p; print('ok', p)"
